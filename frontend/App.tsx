@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase';
 import Constants from 'expo-constants';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AppProvider, useApp } from './lib/appContext';
 
 /* ---------- AUTH SCREENS ---------- */
 import SignIn from './screens/SignIn';
@@ -35,37 +37,22 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-export default function App() {
-  const [flow, setFlow] = useState<Flow>('signin');
-  const [session, setSession] = useState<any>(null);
-  const [sessionChecked, setSessionChecked] = useState(false);
+const queryClient = new QueryClient();
 
-  // Track session (but DO NOT auto-switch flows)
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session ?? null);
-      setSessionChecked(true);
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, sess) => setSession(sess));
-    return () => sub.subscription.unsubscribe();
-  }, []);
+function InnerApp() {
+  const [flow, setFlow] = useState<Flow>('signin');
+  const { sessionChecked, session } = useApp();
 
   if (!sessionChecked) return null;
 
-  // ---------- AUTH FLOW: stay here until YOU set flow === 'success' ----------
-  if (flow === 'signin') {
-    return <SignIn goSignUp={() => setFlow('signup1')} onSuccess={() => setFlow('success')} />;
-  }
-  if (flow === 'signup1') {
-    return <SignUpStep1 onBack={() => setFlow('signin')} onNext={() => setFlow('signup2')} />;
-  }
-  if (flow === 'signup2') {
-    return <SignUpStep2 onBack={() => setFlow('signup1')} onDone={() => setFlow('success')} />;
+  if (!session) {
+    if (flow === 'signin') return <SignIn goSignUp={() => setFlow('signup1')} onSuccess={() => setFlow('success')} />;
+    if (flow === 'signup1') return <SignUpStep1 onBack={() => setFlow('signin')} onNext={() => setFlow('signup2')} />;
+    if (flow === 'signup2') return <SignUpStep2 onBack={() => setFlow('signup1')} onDone={() => setFlow('success')} />;
   }
 
-console.log('EXPO extra.supabase.url =', (Constants.expoConfig?.extra as any)?.supabase?.url);
+  console.log('EXPO extra.supabase.url =', (Constants.expoConfig?.extra as any)?.supabase?.url);
 
-  // ---------- MAIN APP FLOW (flow === 'success') ----------
   return (
     <SafeAreaProvider>
       <NavigationContainer>
@@ -81,5 +68,15 @@ console.log('EXPO extra.supabase.url =', (Constants.expoConfig?.extra as any)?.s
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppProvider>
+        <InnerApp />
+      </AppProvider>
+    </QueryClientProvider>
   );
 }

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, Pressable } from 'react-native';
 import { Primary } from './ui';
 import BackButton from './BackButton';
 import { supabase } from '../lib/supabase';
+import { useAppliances } from '../lib/hooks';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
 
@@ -10,18 +11,8 @@ type P = NativeStackScreenProps<RootStackParamList, 'AppliancesList'>;
 
 export default function AppliancesList({ route, navigation }: P) {
   const { homeId, nickname } = route.params;
-  const [items, setItems] = useState<any[]>([]);
-
-  async function load() {
-    const { data } = await supabase
-      .from('appliances')
-      .select('id, type, install_year, location')
-      .eq('home_id', homeId)
-      .order('created_at', { ascending: false });
-    setItems(data || []);
-  }
-
-  useEffect(() => { load(); }, [homeId]);
+  const appliancesQuery = useAppliances(homeId);
+  const items = appliancesQuery.data || [];
 
   return (
     <View style={{ flex:1, backgroundColor:'#fff', padding:16 }}>
@@ -49,7 +40,7 @@ export default function AppliancesList({ route, navigation }: P) {
             </Pressable>
           </View>
         )}
-        ListEmptyComponent={<Text style={{ color:'#666' }}>No appliances yet.</Text>}
+        ListEmptyComponent={appliancesQuery.isLoading ? <Text style={{ color:'#666' }}>Loading…</Text> : <Text style={{ color:'#666' }}>No appliances yet.</Text>}
       />
 
       <View style={{ marginTop: 16 }}>
