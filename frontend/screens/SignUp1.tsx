@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'; // ✅ fix deprec
 import { HeaderShapes, Title, RoundedInput, ButtonOutline, ButtonFilled } from './shared';
 import { supabase } from '../lib/supabase';
 import { useFonts } from 'expo-font';
+import { useApp } from '../lib/appContext';
 
 type Props = {
   onNext: (data: { email: string }) => void; // go to step 2
@@ -17,22 +18,40 @@ export default function SignUpStep1({ onNext, onBack }: Props) {
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading]   = useState(false);
+  const { refresh } = useApp();
 
   const titleFont = useMemo(() => (fontsLoaded ? 'Geist-Bold' : undefined), [fontsLoaded]);
+
+  function isValidEmail(e: string) {
+    return /.+@.+\..+/.test(e);
+  }
 
   async function handleNext() {
     try {
       setLoading(true);
       const emailTrim = email.trim();
 
+      if (!isValidEmail(emailTrim)) {
+        Alert.alert('Check email', 'Please enter a valid email address.');
+        return;
+      }
+      if (!password || password.length < 8) {
+        Alert.alert('Weak password', 'Password must be at least 8 characters.');
+        return;
+      }
+
       // Try to sign up
       const { data, error } = await supabase.auth.signUp({ email: emailTrim, password });
 
       if (error) {
         // If user already exists, sign in with provided password and continue the wizard
-        if (String(error.message).toLowerCase().includes('already registered')) {
+        const msg = String(error.message).toLowerCase();
+        if (msg.includes('already registered') || msg.includes('user already') || msg.includes('exists')) {
           const { error: signInErr } = await supabase.auth.signInWithPassword({ email: emailTrim, password });
-          if (signInErr) throw signInErr;
+          if (signInErr) {
+            Alert.alert('Account exists', 'This email is already registered, but the password is incorrect. Try Sign In or reset your password.');
+            throw signInErr;
+          }
 
           const { data: u } = await supabase.auth.getUser();
           if (u?.user?.id) {
@@ -45,6 +64,7 @@ export default function SignUpStep1({ onNext, onBack }: Props) {
             });
           }
 
+          await refresh();
           onNext({ email: emailTrim });
           return;
         }
@@ -62,6 +82,24 @@ export default function SignUpStep1({ onNext, onBack }: Props) {
           last_name:  lastName  || null,
           updated_at: new Date().toISOString(),
         });
+        await refresh();
+      }
+
+      if (!data.session && data.user) {
+        // Email confirmation required
+        Alert.alert(
+          'Confirm your email',
+          'We sent you a confirmation link. Please confirm your email, then continue.',
+          [
+            {
+              text: 'Resend',
+              onPress: async () => {
+                try { await supabase.auth.resend({ type: 'signup', email: emailTrim }); Alert.alert('Sent', 'Confirmation email resent.'); } catch {}
+              },
+            },
+            { text: 'OK' },
+          ]
+        );
       }
 
       onNext({ email: emailTrim });

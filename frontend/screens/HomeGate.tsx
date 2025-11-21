@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
+import { useThemeMode } from '../lib/themeMode';
 import { supabase } from '../lib/supabase';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
@@ -7,6 +8,7 @@ import type { RootStackParamList } from '../App';
 type P = NativeStackScreenProps<RootStackParamList, any>;
 
 export default function HomeGate({ navigation }: P) {
+  const { colors } = useThemeMode();
   useEffect(() => {
     (async () => {
       // 1) Must be signed in
@@ -50,7 +52,7 @@ export default function HomeGate({ navigation }: P) {
   }, [navigation]);
 
   return (
-    <View style={{ flex:1, alignItems:'center', justifyContent:'center' }}>
+    <View style={{ flex:1, alignItems:'center', justifyContent:'center', backgroundColor: colors.bg }}>
       <ActivityIndicator size="large" color="#00B1F2" />
     </View>
   );

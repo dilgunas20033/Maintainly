@@ -3,8 +3,11 @@ import { View, StyleSheet, Alert, Text } from 'react-native';
 import { Input, Primary, Secondary } from './ui';
 import BackButton from './BackButton';
 import { supabase } from '../lib/supabase';
+import { useQueryClient } from '@tanstack/react-query';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
+import { useThemeMode } from '../lib/themeMode';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type P = NativeStackScreenProps<RootStackParamList, 'AddAppliances'>;
 
@@ -47,6 +50,7 @@ function canonicalizeType(raw: string): string {
 
 export default function AddAppliances({ route, navigation }: P) {
   const { homeId } = route.params;
+  const { colors } = useThemeMode();
 
   // Default to dishwasher since you’re testing that flow
   const [type, setType] = useState('dishwasher');
@@ -55,6 +59,7 @@ export default function AddAppliances({ route, navigation }: P) {
   const [model, setModel] = useState('');
   const [location, setLocation] = useState('');
   const [saving, setSaving] = useState(false);
+  const qc = useQueryClient();
 
   const canonType = useMemo(() => canonicalizeType(type), [type]);
 
@@ -95,6 +100,9 @@ export default function AddAppliances({ route, navigation }: P) {
 
       if (error) throw error;
 
+      await qc.invalidateQueries({ queryKey: ['appliances', homeId] });
+      await qc.invalidateQueries({ queryKey: ['maintenance-plan', homeId] });
+
       Alert.alert('Added', `Saved ${data.type}${data.install_year ? ` (${data.install_year})` : ''}.`);
       // Clear inputs for the next add
       setType('dishwasher');
@@ -110,10 +118,13 @@ export default function AddAppliances({ route, navigation }: P) {
   }
 
   return (
+    <SafeAreaView style={{ flex:1, backgroundColor: colors.bg }}>
     <View style={s.wrap}>
-      <BackButton onPress={() => navigation.goBack()} />
-
-      <Text style={s.title}>Add appliances</Text>
+      <View style={{ flexDirection:'row', alignItems:'center', justifyContent:'space-between', marginTop:8 }}>
+        <BackButton onPress={() => navigation.goBack()} />
+        <Text style={[s.title, { color: colors.text }]}>Add Appliances</Text>
+        <View style={{ width:64 }} />
+      </View>
 
       <View style={s.card}>
         <Input placeholder="Type (e.g., dishwasher)" value={type} onChangeText={setType} autoCapitalize="none" />
@@ -128,15 +139,16 @@ export default function AddAppliances({ route, navigation }: P) {
         </View>
 
         {/* Tiny helper so you can see what will be stored */}
-        <Text style={s.hint}>Saving as type: <Text style={{ color: BLUE, fontWeight: '700' }}>{canonType}</Text></Text>
+        <Text style={[s.hint, { color: colors.textDim }]}>Saving as type: <Text style={{ color: BLUE, fontWeight: '700' }}>{canonType}</Text></Text>
       </View>
     </View>
+    </SafeAreaView>
   );
 }
 
 const s = StyleSheet.create({
-  wrap: { flex: 1, padding: 16, backgroundColor: '#fff' },
-  title: { fontSize: 22, fontWeight: '800', marginBottom: 12, textAlign: 'left', top: 40, left: 190 },
-  card: { gap: 10, top: 50 },
-  hint: { marginTop: 8, color: '#5b6b74' },
+  wrap: { flex: 1, padding: 16 },
+  title: { fontSize: 24, fontWeight: '800', marginBottom: 8, textAlign: 'center' },
+  card: { gap: 10 },
+  hint: { marginTop: 8, textAlign:'center' },
 });

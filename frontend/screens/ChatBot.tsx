@@ -4,6 +4,7 @@ import {
   Platform, FlatList
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useThemeMode } from '../lib/themeMode';
 import BackButton from './BackButton';
 import { supabase } from '../lib/supabase';
 
@@ -13,11 +14,13 @@ type Msg = { id: string; role: 'assistant' | 'user'; content: string };
 
 
 
-export default function ChatBot({ navigation }: any) {
+export default function ChatBot({ navigation, route }: any) {
+  const applianceId: string | undefined = route?.params?.applianceId;
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const listRef = useRef<FlatList<Msg>>(null);
+  const { colors, mode } = useThemeMode();
 
   // Personalized welcome
   useEffect(() => {
@@ -32,12 +35,22 @@ export default function ChatBot({ navigation }: any) {
           .maybeSingle();
         firstName = prof?.first_name || undefined;
       }
-      const hello = firstName
-        ? `Hi ${firstName}! I’m here to help with your home and appliances. Ask me about lifespan estimates, care steps, or what to budget.`
-        : `Hi! I’m Maintainly. Ask me about your appliances, expected lifespan, or what to budget.`;
-      setMessages([{ id: 'welcome', role: 'assistant', content: hello }]);
+      let intro = firstName
+        ? `Hi ${firstName}! I’m here to help with your home and appliances.`
+        : `Hi! I’m Maintainly. Ask me about your appliances, expected lifespan, or budgeting.`;
+      if (applianceId) {
+        const { data: ap } = await supabase
+          .from('appliances')
+          .select('type, install_year, brand, model, location')
+          .eq('id', applianceId)
+          .maybeSingle();
+        if (ap) {
+          intro += `\nContext: ${ap.type.replace(/_/g,' ')}${ap.install_year?` (${ap.install_year})`:''}${ap.brand?` • ${ap.brand}`:''}${ap.model?` • ${ap.model}`:''}${ap.location?` @ ${ap.location}`:''}. Tell me the issue or question.`;
+        }
+      }
+      setMessages([{ id: 'welcome', role: 'assistant', content: intro }]);
     })();
-  }, []);
+  }, [applianceId]);
 
   function pushMessage(role: 'assistant' | 'user', content: string) {
     setMessages(prev => [...prev, { id: Date.now() + Math.random() + '', role, content }]);
@@ -59,7 +72,7 @@ export default function ChatBot({ navigation }: any) {
 
     // ✅ Invoke via SDK (adds apikey + bearer token + CORS)
     const { data, error } = await supabase.functions.invoke('chat_plan', {
-      body: { message: text },
+      body: { message: text, applianceId },
     });
 
     if (error) throw error;
@@ -84,19 +97,21 @@ export default function ChatBot({ navigation }: any) {
   
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.select({ ios: 'padding', android: undefined })}
         keyboardVerticalOffset={Platform.select({ ios: 6, android: 0 })}
       >
         <View style={{ flex: 1 }}>
-          {/* Back + Title (your header stays intact; this is additive) */}
-          <BackButton onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('GetStarted'))} />
-          <Text style={st.header}>ChatBot</Text>
+          <View style={st.headerBar}>
+            <BackButton onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('GetStarted'))} />
+            <Text style={[st.headerTitle, { color: colors.text }]}>ChatBot</Text>
+            <View style={{ width: 64 }} />
+          </View>
 
           {/* Chat window */}
-          <View style={st.window}>
+          <View style={[st.window, { borderColor: colors.primary, backgroundColor: mode==='dark'?colors.bgAlt:'#fff' }]}>
             <FlatList
               ref={listRef}
               data={messages}
@@ -117,19 +132,19 @@ export default function ChatBot({ navigation }: any) {
           </View>
 
           {/* Input row */}
-          <View style={st.inputRow}>
+          <View style={[st.inputRow, { backgroundColor: colors.bg }] }>
             <TextInput
               placeholder="Ask Maintainly"
               value={input}
               onChangeText={setInput}
-              style={st.input}
-              placeholderTextColor="#7aa7b6"
+              style={[st.input,{ borderColor: colors.primary, backgroundColor: colors.bgAlt, color: colors.text }]}
+              placeholderTextColor={colors.textDim}
               multiline
               onSubmitEditing={send}
               returnKeyType="send"
             />
-            <Pressable onPress={send} style={st.sendBtn}>
-              <Text style={{ color: '#fff', fontWeight: '700' }}>Send</Text>
+            <Pressable onPress={send} style={[st.sendBtn, { backgroundColor: colors.primary }] }>
+              <Text style={{ color: '#fff', fontWeight: '700' }}>{sending?'…':'Send'}</Text>
             </Pressable>
           </View>
         </View>
@@ -140,19 +155,14 @@ export default function ChatBot({ navigation }: any) {
 
 
 const st = StyleSheet.create({
-  header: {
-    textAlign: 'right',
-    fontSize: 24,
-    fontWeight: '800',
-    marginTop: 6,
-    marginRight: 20,
-    marginBottom: 10,
-  },
+  headerBar: { flexDirection:'row', alignItems:'center', justifyContent:'space-between', paddingHorizontal:16, paddingTop:8, paddingBottom:4 },
+  headerLeft: {},
+  headerRight: {},
+  headerTitle: { fontSize:24, fontWeight:'800', textAlign:'center', paddingVertical:8, flex:1 },
   window: {
     flex: 1,
     marginHorizontal: 16,
     borderWidth: 2,
-    borderColor: BLUE,
     borderRadius: 10,
     overflow: 'hidden',
   },
@@ -170,32 +180,26 @@ const st = StyleSheet.create({
   },
   user: {
     alignSelf: 'flex-end',
-    backgroundColor: '#00B1F2',
+    backgroundColor: BLUE,
     borderTopRightRadius: 4,
   },
   text: { fontSize: 15, lineHeight: 20 },
   textAssistant: { color: '#123' },
   textUser: { color: '#fff' },
   typing: { flexDirection: 'row', alignItems: 'center', padding: 10 },
-  inputRow: {
-    padding: 16,
-    paddingTop: 10,
-  },
+  inputRow: { padding:16, paddingTop:10 },
   input: {
     minHeight: 44,
     maxHeight: 120,
     borderWidth: 2,
-    borderColor: BLUE,
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: '#fff',
     color: '#000',
   },
   sendBtn: {
     marginTop: 10,
     alignSelf: 'flex-end',
-    backgroundColor: BLUE,
     borderRadius: 10,
     paddingHorizontal: 16,
     paddingVertical: 10,

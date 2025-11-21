@@ -21,17 +21,12 @@ export default function BackButton({
 
 const styles = StyleSheet.create({
   btn: {
-    position: 'absolute',
-    left: 12,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#00B1F2',
     backgroundColor: '#ffffffcc',
-    zIndex: 10,                 // <-- make sure it’s above everything
-    elevation: 10,              // <-- Android
-    top: 55,
   },
   text: { color: '#00B1F2', fontWeight: '700' },
 });

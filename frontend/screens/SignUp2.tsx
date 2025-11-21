@@ -4,12 +4,14 @@ import { HeaderShapes, Title, RoundedInput, ButtonOutline, ButtonFilled } from '
 import { supabase } from '../lib/supabase';
 import { useFonts } from 'expo-font';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useApp } from '../lib/appContext';
 
 export default function SignUpStep2({ onBack, onDone }: { onBack: () => void; onDone: () => void }) {
   const [fontsLoaded] = useFonts({ /* 'Geist-Bold': require('../assets/fonts/Geist-Bold.ttf'), */ });
   const [country, setCountry] = useState(''); const [stateVal, setStateVal] = useState(''); const [city, setCity] = useState('');
   const [loading, setLoading] = useState(false);
   const titleFont = useMemo(() => (fontsLoaded ? 'Geist-Bold' : undefined), [fontsLoaded]);
+  const { refresh } = useApp();
 
   async function handleFinish() {
     try {
@@ -25,6 +27,7 @@ export default function SignUpStep2({ onBack, onDone }: { onBack: () => void; on
       }, { onConflict: 'user_id' });
       if (pErr) throw pErr;
 
+      await refresh();
       Alert.alert('Success', 'Sign up complete! You are logged in.');
       onDone(); // go to temporary success page
     } catch (e:any) { Alert.alert('Save failed', e?.message ?? 'Unknown error'); }

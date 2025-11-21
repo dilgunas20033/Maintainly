@@ -63,6 +63,10 @@ export interface RegionContext {
   state?: string | null;
   country?: string | null;
   climateZone?: string; // e.g., 'humid_subtropical'
+  bedrooms?: number;
+  bathrooms?: number;
+  floors?: number;
+  homeId?: string;
 }
 
 // Simple result bundling

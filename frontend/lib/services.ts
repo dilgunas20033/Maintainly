@@ -59,3 +59,12 @@ export async function insertAppliance(payload: Omit<Appliance, 'id' | 'created_a
   if (error) throw error;
   return data as Appliance;
 }
+
+export async function fetchHome(homeId: string): Promise<Home | null> {
+  const { data } = await supabase
+    .from('homes')
+    .select('id, user_id, nickname, city, state, country, zip, bedrooms, bathrooms, floors, created_at')
+    .eq('id', homeId)
+    .maybeSingle();
+  return (data || null) as Home | null;
+}

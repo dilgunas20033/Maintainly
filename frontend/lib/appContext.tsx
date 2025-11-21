@@ -8,6 +8,7 @@ interface AppState {
   homes: Home[];
   currentHomeId: string | null;
   setCurrentHome: (id: string | null) => void;
+  refresh: () => Promise<void>;
   sessionChecked: boolean;
   session: any;
 }
@@ -30,17 +31,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  const refresh = async () => {
+    if (!session) { setProfile(null); setHomes([]); setCurrentHomeId(null); return; }
+    const p = await fetchProfile();
+    setProfile(p);
+    const h = await fetchHomes();
+    setHomes(h);
+    if (!currentHomeId) setCurrentHomeId(p?.last_home_id || h[0]?.id || null);
+  };
+
   useEffect(() => {
     if (!session) { setProfile(null); setHomes([]); setCurrentHomeId(null); return; }
     (async () => {
-      const p = await fetchProfile();
-      setProfile(p);
-      const h = await fetchHomes();
-      setHomes(h);
-      // prefer profile.last_home_id else first home
-      if (!currentHomeId) {
-        setCurrentHomeId(p?.last_home_id || h[0]?.id || null);
-      }
+      await refresh();
     })();
   }, [session]);
 
@@ -49,6 +52,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     homes,
     currentHomeId,
     setCurrentHome: setCurrentHomeId,
+    refresh,
     sessionChecked,
     session,
   };

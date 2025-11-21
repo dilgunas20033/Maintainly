@@ -1,18 +1,16 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import BackButton from './BackButton';
-import { Primary } from './ui';
-import { supabase } from '../lib/supabase';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../App';
+import { useThemeMode } from '../lib/themeMode';
 
-export default function Placeholder({ route }: any) {
-  const title = route.params?.title || 'Coming soon';
+export default function Placeholder({ navigation, route }: any) {
+  const title = route?.params?.title || 'Coming soon';
+  const { colors } = useThemeMode();
   return (
-    <View style={{ flex:1, alignItems:'center', justifyContent:'center' }}>
-        <BackButton onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('GetStarted'))} />
-      <Text style={{ fontSize: 22, fontWeight:'800', marginBottom: 8 }}>{title}</Text>
-      <Text style={{ color:'#666' }}>This screen is a temporary placeholder.</Text>
+    <View style={{ flex:1, alignItems:'center', justifyContent:'center', padding: 20, backgroundColor: colors.bg }}>
+      <BackButton onPress={() => (navigation.canGoBack() ? navigation.goBack() : navigation.navigate('GetStarted'))} />
+      <Text style={{ fontSize: 22, fontWeight:'800', marginBottom: 8, color: colors.text }}>{title}</Text>
+      <Text style={{ color: colors.textDim, textAlign:'center' }}>This screen was a placeholder; it has no behavior yet. Navigate elsewhere to continue.</Text>
     </View>
   );
 }
