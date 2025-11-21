@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Tile, FAB, BottomButton } from './ui';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App'; // or ../types/navigation if you split types
@@ -16,10 +17,10 @@ export default function GetStarted({ navigation }: P) {
     else navigation.navigate('AddHome');
   };
   return (
-    <View style={[s.wrap, { backgroundColor: colors.bg }]}>
-      {/* ✅ Close ScrollView properly */}
-      <ScrollView contentContainerStyle={{ padding: 16 , top:40}}>
-        <Text style={[s.title, { color: colors.text }]}>Get started</Text>
+    <SafeAreaView style={{ flex:1, backgroundColor: colors.bg }}>
+    {/* ✅ Close ScrollView properly */}
+    <ScrollView contentContainerStyle={{ padding: 16 }}>
+      <Text style={[s.title, { color: colors.text }]}>Get started</Text>
 
         <View style={s.grid}>
           <Tile icon="home-plus-outline" title="Add a home" large onPress={() => navigation.navigate('AddHome')} />
@@ -41,7 +42,7 @@ export default function GetStarted({ navigation }: P) {
         title="AI Chatbot"
         onPress={() => navigation.navigate('ChatBot')}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 

@@ -11,6 +11,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useThemeMode } from '../lib/themeMode';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type P = NativeStackScreenProps<RootStackParamList, 'HomeDashboard'>;
 
@@ -97,8 +98,8 @@ export default function HomeDashboard({ route, navigation }: P) {
   }
 
   return (
-    <View style={{ flex:1, backgroundColor: colors.bg }}>
-      <View style={{ padding: 16, paddingTop: 50, flex: 1 }}>
+    <SafeAreaView style={{ flex:1, backgroundColor: colors.bg }}>
+    <View style={{ padding: 16, flex: 1 }}>
         <View style={s.headerBar}>
           <Pressable onPress={() => navigation.navigate('Settings')} style={s.iconBtn}>
             <MaterialCommunityIcons name="cog-outline" size={22} color={colors.text} />
@@ -138,7 +139,7 @@ export default function HomeDashboard({ route, navigation }: P) {
       <Pressable onPress={() => navigation.navigate('AppliancesList', { homeId, nickname })} style={{ position:'absolute', right:18, bottom:18, width:46, height:46, borderRadius:23, backgroundColor: colors.primary, alignItems:'center', justifyContent:'center', shadowColor:'#000', shadowOffset:{width:0,height:4}, shadowOpacity:0.25, shadowRadius:10, elevation:5 }}>
         <MaterialCommunityIcons name="plus" size={24} color="#fff" />
       </Pressable>
-    </View>
+    </SafeAreaView>
   );
 }
 

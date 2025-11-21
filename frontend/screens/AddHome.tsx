@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Alert, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Input, Primary, Secondary } from './ui';
 import { supabase } from '../lib/supabase';
 import BackButton from './BackButton';
@@ -67,7 +68,7 @@ export default function AddHome({ navigation, route }: P) {
       const fullAddress = address || `${cty}, ${st} ${zip} ${ctry}`;
       coords = await geocode(fullAddress);
 
-      if (homeId) {
+        if (homeId) {
         const { data: upd, error: uErr } = await supabase
           .from('homes')
           .update({
@@ -79,8 +80,10 @@ export default function AddHome({ navigation, route }: P) {
             bedrooms: bedrooms ? Number(bedrooms) : null,
             bathrooms: bathrooms ? Number(bathrooms) : null,
             floors: floors ? Number(floors) : null,
-            lat: coords?.lat ?? null,
-            lon: coords?.lon ?? null,
+              // NOTE: lat/lon columns may not exist in some databases. Omit them to avoid schema errors.
+              // When your database has `lat` and `lon` on `homes`, re-enable these assignments.
+            // lat: coords?.lat ?? null,
+            // lon: coords?.lon ?? null,
             move_in_year: moveInYear ? Number(moveInYear) : null,
           })
           .eq('id', homeId)
@@ -101,8 +104,9 @@ export default function AddHome({ navigation, route }: P) {
             bedrooms: bedrooms ? Number(bedrooms) : null,
             bathrooms: bathrooms ? Number(bathrooms) : null,
             floors: floors ? Number(floors) : null,
-            lat: coords?.lat ?? null,
-            lon: coords?.lon ?? null,
+            // lat/lon omitted intentionally to avoid errors if DB schema hasn't been migrated yet
+            // lat: coords?.lat ?? null,
+            // lon: coords?.lon ?? null,
             move_in_year: moveInYear ? Number(moveInYear) : null,
           })
           .select('id, nickname, city, state, country')
@@ -183,7 +187,8 @@ export default function AddHome({ navigation, route }: P) {
   }, [homeId]);
 
   return (
-    <View style={[s.wrap, { backgroundColor: colors.bg }]}>
+    <SafeAreaView style={{ flex:1, backgroundColor: colors.bg }}>
+    <View style={s.wrap}>
       <View style={{ flexDirection:'row', alignItems:'center', justifyContent:'space-between', marginTop:8 }}>
         <BackButton onPress={goBackSafe} />
         <Text style={[s.title, { color: colors.text }]}>{homeId ? 'Edit Home' : 'Add a Home'}</Text>
@@ -218,6 +223,7 @@ export default function AddHome({ navigation, route }: P) {
         </View>
       </View>
     </View>
+    </SafeAreaView>
   );
 }
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, FlatList, Linking } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import BackButton from './BackButton';
 import { useApp } from '../lib/appContext';
 import { useThemeMode } from '../lib/themeMode';
@@ -21,7 +22,8 @@ export default function CallService({ navigation }: any) {
   const suggestions = ['plumber','electrician','hvac repair','roofing','pest control'];
 
   return (
-    <View style={[s.wrap, { backgroundColor: colors.bg }]}>
+    <SafeAreaView style={{ flex:1, backgroundColor: colors.bg }}>
+    <View style={s.wrap}>
       <View style={{ flexDirection:'row', alignItems:'center', justifyContent:'space-between', marginTop:8 }}>
         <BackButton onPress={() => navigation.goBack()} />
         <Text style={[s.title, { color: colors.text }]}>Find Local Services</Text>
@@ -37,6 +39,7 @@ export default function CallService({ navigation }: any) {
         <Pressable onPress={() => openMaps(item)} style={[s.srow, { borderColor: colors.bgAlt }]}><Text style={{ color: colors.text }}>{item}</Text></Pressable>
       )} />
     </View>
+    </SafeAreaView>
   );
 }
 

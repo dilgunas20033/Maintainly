@@ -98,7 +98,7 @@ export default function Calendar({ route, navigation }: P) {
 
 const s = StyleSheet.create({
   wrap: { flex: 1, padding: 16 },
-  title: { fontSize: 24, fontWeight: '800', marginTop: 60, marginBottom: 12, textAlign: 'center' },
+  title: { fontSize: 24, fontWeight: '800', marginTop: 0, marginBottom: 12, textAlign: 'center' },
   section: { marginTop: 12, marginBottom: 6, fontWeight: '800' },
   row: { borderWidth: 2, borderRadius: 10, padding: 12, flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
   task: { fontWeight: '700' },

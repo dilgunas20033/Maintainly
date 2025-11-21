@@ -1,12 +1,14 @@
 import React from 'react';
 import { View, Text, StyleSheet, Linking, Pressable } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import BackButton from './BackButton';
 import { useThemeMode } from '../lib/themeMode';
 
 export default function Help({ navigation }: any) {
   const { colors } = useThemeMode();
   return (
-    <View style={[s.wrap, { backgroundColor: colors.bg }]}>
+    <SafeAreaView style={{ flex:1, backgroundColor: colors.bg }}>
+    <View style={s.wrap}>
       <View style={{ flexDirection:'row', alignItems:'center', justifyContent:'space-between', marginTop:8 }}>
         <BackButton onPress={() => navigation.goBack()} />
         <Text style={[s.title, { color: colors.text }]}>Help & Support</Text>
@@ -22,6 +24,7 @@ export default function Help({ navigation }: any) {
         <Text style={[s.link, { color: colors.primary }]}>Email support@maintainly.app</Text>
       </Pressable>
     </View>
+    </SafeAreaView>
   );
 }
 

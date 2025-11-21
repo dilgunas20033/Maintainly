@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import BackButton from './BackButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -41,7 +42,8 @@ export default function CustomTaskAdd({ route, navigation }: P) {
   }
 
   return (
-    <View style={[s.wrap, { backgroundColor: colors.bg }]}>
+    <SafeAreaView style={{ flex:1, backgroundColor: colors.bg }}>
+    <View style={s.wrap}>
       <View style={{ flexDirection:'row', alignItems:'center', justifyContent:'space-between', marginTop:8 }}>
         <BackButton onPress={() => navigation.goBack()} />
         <Text style={[s.title, { color: colors.text }]}>Add Custom Task</Text>
@@ -55,6 +57,7 @@ export default function CustomTaskAdd({ route, navigation }: P) {
         <Text style={s.btnText}>{saving ? 'Saving…' : 'Save Task'}</Text>
       </Pressable>
     </View>
+    </SafeAreaView>
   );
 }
 

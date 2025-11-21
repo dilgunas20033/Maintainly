@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { supabase } from '../lib/supabase';
 import BackButton from './BackButton';
@@ -56,10 +57,11 @@ export default function EditAppliance() {
     }
   }
 
-  if (loading) return <View style={{ flex:1, justifyContent:'center', alignItems:'center', backgroundColor: colors.bg }}><Text style={{ color: colors.text }}>Loading…</Text></View>;
+  if (loading) return <SafeAreaView style={{ flex:1, justifyContent:'center', alignItems:'center', backgroundColor: colors.bg }}><Text style={{ color: colors.text }}>Loading…</Text></SafeAreaView>;
 
   return (
-    <View style={{ flex:1, backgroundColor: colors.bg, padding:16 }}>
+    <SafeAreaView style={{ flex:1, backgroundColor: colors.bg }}>
+    <View style={{ flex:1, padding:16 }}>
       <View style={{ flexDirection:'row', alignItems:'center', justifyContent:'space-between', marginTop:8 }}>
         <BackButton onPress={() => navigation.goBack()} />
         <Text style={{ fontSize:20, fontWeight:'700', marginBottom:8, color: colors.text }}>Edit Appliance</Text>
@@ -88,6 +90,7 @@ export default function EditAppliance() {
         <Secondary title="Cancel" onPress={() => navigation.goBack()} />
       </View>
     </View>
+    </SafeAreaView>
   );
 }
 

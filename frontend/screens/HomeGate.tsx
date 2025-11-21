@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeMode } from '../lib/themeMode';
 import { supabase } from '../lib/supabase';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -52,8 +53,10 @@ export default function HomeGate({ navigation }: P) {
   }, [navigation]);
 
   return (
-    <View style={{ flex:1, alignItems:'center', justifyContent:'center', backgroundColor: colors.bg }}>
-      <ActivityIndicator size="large" color="#00B1F2" />
-    </View>
+    <SafeAreaView style={{ flex:1, backgroundColor: colors.bg }}>
+      <View style={{ flex:1, alignItems:'center', justifyContent:'center' }}>
+        <ActivityIndicator size="large" color="#00B1F2" />
+      </View>
+    </SafeAreaView>
   );
 }

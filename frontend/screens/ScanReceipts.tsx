@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import { View, Text, Image, Pressable, StyleSheet, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import BackButton from './BackButton';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useThemeMode } from '../lib/themeMode';
 
 export default function ScanReceipts({ navigation }: any) {
   const [photos, setPhotos] = useState<string[]>([]);
+  const { colors } = useThemeMode();
 
   async function pickImage() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -21,14 +24,19 @@ export default function ScanReceipts({ navigation }: any) {
   }
 
   return (
-    <View style={s.wrap}>
-      <BackButton onPress={() => navigation.goBack()} />
-      <Text style={s.title}>Scan Receipts</Text>
-      <Text style={s.caption}>Capture or pick receipt photos to keep with appliances (OCR & parsing planned later).</Text>
+    <SafeAreaView style={{ flex:1, backgroundColor: colors.bg }}>
+    <View style={[s.wrap, { backgroundColor: colors.bg }] }>
+      <View style={{ flexDirection:'row', alignItems:'center', justifyContent:'space-between', marginTop:8 }}>
+        <BackButton onPress={() => navigation.goBack()} />
+        <Text style={[s.title, { color: colors.text }]}>Scan Receipts</Text>
+        <View style={{ width:64 }} />
+      </View>
+
+      <Text style={[s.caption, { color: colors.textDim }]}>Capture or pick receipt photos to keep with appliances (OCR & parsing planned later).</Text>
 
       <View style={{ flexDirection:'row', gap:12 }}>
         <Pressable onPress={takePhoto} style={s.btn}><Text style={s.btnText}>Take Photo</Text></Pressable>
-        <Pressable onPress={pickImage} style={[s.btn, { backgroundColor:'#fff', borderWidth:1, borderColor:'#00B1F2' }]}><Text style={{ color:'#00B1F2', fontWeight:'700' }}>Pick Image</Text></Pressable>
+        <Pressable onPress={pickImage} style={[s.btn, { backgroundColor:'#fff', borderWidth:1, borderColor:colors.primary }]}><Text style={{ color:colors.primary, fontWeight:'700' }}>Pick Image</Text></Pressable>
       </View>
 
       <ScrollView style={{ marginTop:12 }}>
@@ -37,6 +45,7 @@ export default function ScanReceipts({ navigation }: any) {
         ))}
       </ScrollView>
     </View>
+    </SafeAreaView>
   );
 }
 
